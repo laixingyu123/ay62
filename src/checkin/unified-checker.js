@@ -488,6 +488,14 @@ class UnifiedAnyRouterChecker {
 
 			// 如果成功获取用户信息，添加余额、已使用额度和推广码
 			if (signInResult.userInfo) {
+				// 检查账号是否被封禁（status=2 表示封禁）
+				if (signInResult.userInfo.status === 2) {
+					updateData.is_banned = true;
+					console.log(`[警告] ${accountName}: 账号已被封禁，更新封禁状态`);
+				} else {
+					updateData.is_banned = false;
+				}
+
 				updateData.balance = Math.round(signInResult.userInfo.quota / 500000);
 				updateData.used = Math.round((signInResult.userInfo.usedQuota || 0) / 500000);
 				if (signInResult.userInfo.affCode) {
@@ -503,7 +511,8 @@ class UnifiedAnyRouterChecker {
 
 				const quota = (signInResult.userInfo.quota / 500000).toFixed(2);
 				const usedQuota = (signInResult.userInfo.usedQuota || 0) / 500000;
-				userInfoText = `💰 当前余额: $${quota}, 已使用: $${usedQuota.toFixed(2)}`;
+				const bannedText = signInResult.userInfo.status === 2 ? ' 🚫 检测到账号被官方封禁，不再签到' : '';
+				userInfoText = `💰 当前余额: $${quota}, 已使用: $${usedQuota.toFixed(2)}${bannedText}`;
 			}
 
 			// 更新账户信息

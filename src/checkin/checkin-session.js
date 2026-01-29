@@ -521,6 +521,7 @@ class AnyRouterSessionSignIn {
 										usedQuota: data.data.used_quota,
 										affCode: data.data.aff_code,
 										affQuota: data.data.aff_quota || 0,
+										status: data.data.status, // 用户状态：1-正常，2-封禁
 									};
 								}
 								return null;
@@ -532,6 +533,13 @@ class AnyRouterSessionSignIn {
 					);
 
 					if (userInfo) {
+						// 检查账号是否被封禁（status=2 表示封禁）
+						if (userInfo.status === 2) {
+							console.log(`[警告] 账号 ${userInfo.username} 已被封禁 (status=2)`);
+							await context.close();
+							return { success: true, userInfo };
+						}
+
 						console.log(`[信息] 用户名: ${userInfo.username}`);
 						console.log(`[信息] 邮箱: ${userInfo.email}`);
 						console.log(`[信息] 余额: $${(userInfo.quota / 500000).toFixed(2)}`);
